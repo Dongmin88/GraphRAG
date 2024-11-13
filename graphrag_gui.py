@@ -11,7 +11,6 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import threading
 import graphrag
-import vectorrag
 
 class PDFGraphRAGApp:
     def __init__(self):
