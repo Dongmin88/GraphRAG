@@ -86,7 +86,7 @@ class PDFGraphRAGApp:
     def initialize_rag(self):
         if self.rag is None:
             self.status_var.set("Initializing Llama model...")
-            self.rag = graphrag.PDFLlama3GraphRAG()
+            self.rag = vectorrag.PDFLlama3VectorRAG()
             
     def process_pdfs(self):
         # Disable buttons during processing
@@ -121,7 +121,7 @@ class PDFGraphRAGApp:
             self.progress_var.set(50)
             self.root.update_idletasks()
             
-            self.rag.construct_graph(self.documents)
+            self.rag.index_documents(self.documents)
             
             self.status_var.set("Ready for queries")
             self.progress_var.set(100)
@@ -160,7 +160,7 @@ class PDFGraphRAGApp:
             
             # Get subgraph
             nodes = [node for node, _ in relevant_nodes]
-            subgraph = self.rag.get_subgraph(nodes)
+            subgraph = self.rag.retrieve(query, k=5)
             self.progress_var.set(66)
             
             # Generate response
