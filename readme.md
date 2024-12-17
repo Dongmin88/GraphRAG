@@ -18,7 +18,7 @@ CUDA 지원 GPU (권장)
 bashCopypip install torch transformers networkx numpy huggingface_hub pdfplumber tqdm spacy tkinter
 python -m spacy download en_core_web_sm
 Hugging Face 토큰 설정
-pythonCopytoken = "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"  # 여기에 본인의 토큰을 입력하세요
+pythonCopytoken = ""  # 여기에 본인의 토큰을 입력하세요
 파일 구조
 Copyproject_folder/
     ├── graphrag.py        # GraphRAG 핵심 클래스 및 기능
