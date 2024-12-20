@@ -13,7 +13,7 @@ class PDFLlama3GraphRAG:
         """Initialize the GraphRAG system with Llama 3 model"""
         try:
             # Login to Hugging Face
-            login(token="you-token")
+            login(token="you-token.")
             
             # Initialize model and tokenizer
             print("Loading Llama 3 model...")
