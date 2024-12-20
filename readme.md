@@ -1,111 +1,153 @@
-GraphRAG 시스템
-개요
-이 프로젝트는 PDF 문서에서 지식을 추출하고 그래프 기반의 검색 증강 생성(Graph-based Retrieval-Augmented Generation, GraphRAG)을 수행하는 시스템입니다. Llama 3 모델을 기반으로 하여 문서의 내용을 이해하고 질문에 답변할 수 있습니다.
-주요 기능
+# PDF-GraphRAG: PDF 문서를 위한 그래프 기반 검색 증강 생성 시스템
 
-PDF 문서 처리 및 텍스트 추출
-지식 그래프 구성
-의미 기반 검색
-질의응답 생성
+PDF-GraphRAG는 PDF 문서를 처리하고 Llama 3 언어 모델을 사용하여 질의에 답변하는 그래프 기반 검색 증강 생성 시스템의 파이썬 구현체입니다. 이 구현은 ["GraphRAG: Unlocking LLM Knowledge for Zero-Shot Graph Question Answering"](https://arxiv.org/pdf/2404.16130) 연구를 기반으로 합니다.
 
-설치 방법
-필수 요구사항
+## 주요 기능
 
-Python 3.7 이상
-CUDA 지원 GPU (권장)
+- PDF 문서 처리 및 청크 분할
+- 문서 내용 기반 지식 그래프 구성
+- Llama 3를 활용한 엔티티 추출
+- 그래프 기반 정보 검색
+- 사용자 친화적 GUI 인터페이스
+- 멀티스레드 처리 지원
+- 출처 추적 및 인용
 
-필요한 패키지 설치
-bashCopypip install torch transformers networkx numpy huggingface_hub pdfplumber tqdm spacy tkinter
-python -m spacy download en_core_web_sm
-Hugging Face 토큰 설정
-pythonCopytoken = "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"  # 여기에 본인의 토큰을 입력하세요
-파일 구조
-Copyproject_folder/
-    ├── graphrag.py        # GraphRAG 핵심 클래스 및 기능
-    ├── graphrag_gui.py    # 그래픽 사용자 인터페이스
-    └── README.md         # 문서
-사용 방법
-1. GUI 모드 실행
-bashCopypython graphrag_gui.py
-2. 코드에서 직접 사용
-pythonCopyfrom graphrag import PDFLlama3GraphRAG
+## 시스템 요구사항
 
-# GraphRAG 시스템 초기화
+- Python 3.8 이상
+- PyTorch
+- Hugging Face Transformers
+- NetworkX
+- PDFPlumber
+- Tkinter (GUI용)
+- CUDA 지원 GPU (권장)
+
+## 프로젝트 구조
+
+- `graphrag.py`: GraphRAG 시스템 핵심 구현체
+- `graphrag_gui.py`: 시스템 GUI 인터페이스
+- `requirements.txt`: Python 의존성 목록
+
+## 사용 방법
+
+### 명령줄 인터페이스
+
+```python
+from graphrag import PDFLlama3GraphRAG
+
+# 시스템 초기화
 rag = PDFLlama3GraphRAG()
 
-# PDF 파일 처리
-documents = rag.read_pdf("example.pdf")
-
-# 그래프 구성
+# PDF 문서 처리
+documents = rag.read_pdf("문서경로/문서.pdf")
 rag.construct_graph(documents)
 
-# 질의응답
-query = "원하는 질문을 입력하세요"
+# 시스템에 질의
+query = "질문을 입력하세요"
 relevant_nodes = rag.retrieve(query)
-nodes = [node for node, _ in relevant_nodes]
-subgraph = rag.get_subgraph(nodes)
+subgraph = rag.get_subgraph([node for node, _ in relevant_nodes])
 response = rag.generate_response(query, subgraph)
 print(response)
-주요 클래스 및 메소드
-PDFLlama3GraphRAG
+```
 
-__init__(): 시스템 초기화
-read_pdf(): PDF 파일 읽기 및 텍스트 추출
-construct_graph(): 지식 그래프 구성
-retrieve(): 관련 노드 검색
-generate_response(): 응답 생성
+### GUI 인터페이스
 
-PDFGraphRAGApp
+```bash
+python graphrag_gui.py
+```
 
-GUI 인터페이스 제공
-PDF 파일 선택
-질의응답 인터페이스
-진행 상황 표시
+GUI는 다음과 같은 직관적인 인터페이스를 제공합니다:
+1. PDF 파일 선택
+2. 문서 처리
+3. 질의 제출
+4. 출처가 포함된 응답 확인
 
-성능 최적화
+## 작동 방식
 
-배치 처리를 통한 엔티티 추출 최적화
-텍스트 전처리 개선
-GPU 가속 활용
+1. **PDF 처리**: 문서를 문맥과 메타데이터를 유지하면서 관리 가능한 크기로 분할합니다.
 
-주의사항
+2. **엔티티 추출**: Llama 3 모델을 사용하여 텍스트 청크에서 주요 엔티티와 개념을 식별합니다.
 
-PDF 파일의 크기와 수에 따라 처리 시간이 달라질 수 있습니다
-대용량 PDF 처리 시 충분한 메모리가 필요합니다
-긴 문서의 경우 청크 단위로 분할하여 처리됩니다
+3. **그래프 구성**: 다음과 같은 지식 그래프를 구축합니다:
+   - 노드는 엔티티와 개념을 표현
+   - 엣지는 함께 등장하는 엔티티 간의 관계를 표현
+   - 노드 임베딩은 Llama 3를 사용하여 생성
 
-문제 해결
-일반적인 문제
+4. **질의 처리**:
+   - 질의를 동일한 모델을 사용하여 임베딩
+   - 의미적 유사도를 사용하여 관련 노드 검색
+   - 검색된 노드로부터 서브그래프 구성
+   - 질의와 그래프 문맥을 고려하여 최종 응답 생성
 
-PDF 텍스트 추출 문제
+5. **출처 추적**: 모든 응답에는 원본 PDF 문서와 페이지 번호에 대한 인용이 포함됩니다.
 
-해결: 텍스트 전처리 기능 사용
+## 주요 컴포넌트
 
-pythonCopyfrom graphrag import preprocess_text
-processed_text = preprocess_text(raw_text)
+### PDFLlama3GraphRAG
 
-메모리 부족 오류
+GraphRAG 시스템을 구현하는 핵심 클래스:
+- Llama 3 모델 초기화
+- PDF 문서 처리
+- 지식 그래프 관리
+- 질의 처리
 
-해결: batch_size 조정
+### PDFGraphRAGApp
 
-pythonCopyrag = PDFLlama3GraphRAG()
-rag.batch_size = 16  # 기본값보다 작게 설정
+다음 기능을 제공하는 GUI 애플리케이션:
+- 파일 선택 인터페이스
+- 진행 상황 추적
+- 질의 입력
+- 응답 표시
+- 멀티스레드 처리
 
-GPU 메모리 부족
+## 기여하기
 
-해결: 모델 설정 변경
+기여는 언제나 환영합니다! Pull Request를 제출해 주세요.
 
-pythonCopyrag.model = rag.model.to('cpu')  # CPU 모드로 전환
+## 인용
 
+연구에서 이 구현체를 사용하실 경우 다음을 인용해 주세요:
 
-향후 개선 계획
+```bibtex
+@article{graphrag2024,
+  title={GraphRAG: Unlocking LLM Knowledge for Zero-Shot Graph Question Answering},
+  author={Original Authors},
+  journal={arXiv preprint arXiv:2404.16130},
+  year={2024}
+}
+```
 
-다국어 지원 확대
-모델 최적화
-병렬 처리 기능 강화
-메모리 사용량 최적화
+## 라이선스
 
-라이선스
-이 프로젝트는 MIT 라이선스를 따릅니다.
-문의사항
-문제가 발생하거나 추가 기능이 필요한 경우 Issues에 등록해 주세요.
+MIT License
+
+Copyright (c) 2024 [프로젝트 소유자]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## 한계점 및 향후 계획
+
+- 현재는 PDF 문서만 지원
+- Llama 3 모델의 컨텍스트 윈도우 제한
+- 큰 문서의 경우 그래프 구성에 많은 메모리 필요
+- 향후 개선 사항:
+  - 더 많은 문서 형식 지원
+  - 개선된 엔티티 추출
+  - 더 정교한 그래프 구성 알고리즘
+  - 대용량 문서 처리 개선
