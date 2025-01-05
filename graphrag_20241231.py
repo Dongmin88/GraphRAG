@@ -126,7 +126,7 @@ Answer:"""
                     inputs["input_ids"],
                     attention_mask=inputs["attention_mask"],
                     pad_token_id=self.tokenizer.pad_token_id,
-                    max_new_tokens=200,          # 증가: 더 긴 답변 허용
+                    max_new_tokens=512,          # 증가: 더 긴 답변 허용
                     min_new_tokens=30,          # 추가: 최소 길이 설정
                     num_beams=5,                # 증가: 더 다양한 생성 경로 탐색
                     no_repeat_ngram_size=3,     # 수정: 반복 방지 설정 조정
