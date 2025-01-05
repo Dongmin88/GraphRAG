@@ -12,11 +12,15 @@ class GraphRAG:
         
         print(f"Loading model: {model_name}")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+    # 패딩 토큰 설정
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+            pad_token_id=self.tokenizer.pad_token_id
         ).to(device)
-        
         self.knowledge_graph = nx.Graph()
         
     def add_knowledge(self, triples: List[Tuple[str, str, str]]):
@@ -120,12 +124,18 @@ Answer:"""
             try:
                 outputs = self.model.generate(
                     inputs["input_ids"],
-                    max_new_tokens=100,
-                    num_beams=3,
-                    no_repeat_ngram_size=2,
-                    temperature=0.7,
-                    top_p=0.9,
-                    do_sample=True
+                    attention_mask=inputs["attention_mask"],
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    max_new_tokens=200,          # 증가: 더 긴 답변 허용
+                    min_new_tokens=30,          # 추가: 최소 길이 설정
+                    num_beams=5,                # 증가: 더 다양한 생성 경로 탐색
+                    no_repeat_ngram_size=3,     # 수정: 반복 방지 설정 조정
+                    temperature=0.8,            # 조정: 약간 더 창의적인 답변
+                    top_p=0.95,                # 조정: 더 다양한 토큰 선택
+                    do_sample=True,
+                    early_stopping=True,        # 추가: 자연스러운 종료 지점에서 멈춤
+                    length_penalty=1.0,         # 추가: 길이에 대한 페널티
+                    repetition_penalty=1.2      # 추가: 반복 방지 강화
                 )
                 
                 answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
