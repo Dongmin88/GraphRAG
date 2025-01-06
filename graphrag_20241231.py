@@ -170,7 +170,7 @@ def test_graphrag():
         "What is the population of France?",
         "Tell me about Paris and its landmarks."
     ]
-    
+    #음 pdf나 txt 파일을 그래프로 만들어서 적용시킬려고 했지만.. 너무 느림.
     for question in test_questions:
         print("\n" + "="*50)
         print(f"Question: {question}")
